@@ -1,4 +1,10 @@
-const { Client } = require('pg');
+const pg = require('pg');
+const { Client } = pg;
+
+var types = pg.types;
+types.setTypeParser(1114, function (stringValue) {
+  return stringValue;
+});
 
 const client = new Client({
   user: `${process.env.DB_USER || 'worker'}`,

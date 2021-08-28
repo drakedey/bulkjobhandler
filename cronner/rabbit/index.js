@@ -1,7 +1,7 @@
 const rabbit = require('amqplib');
 
 const startConnection = async () => {
-  const connection = await rabbit.connect(process.env.RABBIT_CON || 'amqp://localhost:5673');
+  const connection = await rabbit.connect(process.env.RABBIT_CON || 'amqp://localhost:5672');
   return connection;
 }
 
