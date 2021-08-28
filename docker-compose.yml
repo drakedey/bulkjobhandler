@@ -1,0 +1,78 @@
+version: "3.7"
+services:
+  rabbitmq:
+    image: rabbitmq:3.8-management-alpine
+    container_name: 'rabbitmq'
+    ports:
+        - 5672:5672
+        - 15672:15672
+    volumes:
+        - ~/.docker-conf/rabbitmq/data/:/var/lib/rabbitmq/
+        - ~/.docker-conf/rabbitmq/log/:/var/log/rabbitmq
+  postgresql:
+    image: postgres
+    environment:
+      POSTGRES_PASSWORD: 1234
+      POSTGRES_USER: worker
+      POSTGRES_DB: jobs
+      PGDATA: /var/lib/postgresql/data/
+    volumes:
+      - './pgdata:/var/lib/postgresql/data'
+    ports:
+      - '5432:5432'
+  redis:
+    image: redis
+    container_name: job_queue
+    ports:
+      - '6379:6379'
+  controller:
+    build: ./controller
+    depends_on: 
+      - postgresql
+    ports:
+      - '8080:8080'
+    deploy:
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 120s
+    environment:
+      DB_HOST: postgresql
+      DB_NAME: jobs
+      DB_USER: worker
+      DB_PASSWORD: 1234
+      DB_PORT: 5432
+  cronner:
+    build: ./cronner
+    depends_on:
+      - postgresql
+      - controller
+      - rabbitmq
+    ports:
+      - '8081:8081'
+    deploy:
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 120s
+    environment:
+      DB_HOST: postgresql
+      DB_NAME: jobs
+      DB_USER: worker
+      DB_PASSWORD: 1234
+      DB_PORT: 5432
+      RABBIT_CON: amqp://guest:guest@rabbitmq:5672
+  tasker:
+    build: ./cronner
+    depends_on:
+      - redis
+    ports:
+      - '8082:8082'
+    deploy:
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 120s
