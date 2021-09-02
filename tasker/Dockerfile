@@ -10,4 +10,4 @@ COPY . .
 EXPOSE 8082
 
 
-CMD ["node", "index.js" ]
+CMD ["./wait.sh", "rabbitmq:5672", "--",  "node", "server.js" ]

@@ -13,7 +13,7 @@ const bail = (err) => {
 const publisher = (conn, message, q, callback) => {
   conn.createChannel()
     .then((err, ch) => on_open(ch, err))
-    .catch((err) => callback(err, null))
+    .catch((err) => callback ? callback(err, null) : bail(err))
   function on_open(err, ch) {
     if(err) bail(err);
     ch.assertQueue(q, { durable: true })

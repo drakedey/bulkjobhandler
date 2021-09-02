@@ -65,11 +65,16 @@ services:
       DB_PORT: 5432
       RABBIT_CON: amqp://guest:guest@rabbitmq:5672
   tasker:
-    build: ./cronner
+    build: ./tasker
     depends_on:
       - redis
+      - rabbitmq
     ports:
       - '8082:8082'
+    environment:
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      RABBIT_CON: amqp://guest:guest@rabbitmq:5672
     deploy:
       restart_policy:
         condition: on-failure
